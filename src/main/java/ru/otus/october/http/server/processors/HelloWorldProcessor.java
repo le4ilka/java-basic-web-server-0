@@ -14,6 +14,11 @@ public class HelloWorldProcessor implements RequestProcessor {
                 "Content-Type: text/html\r\n" +
                 "\r\n" +
                 "<html><body><h1>Hello World!!!</h1><table><tr><td>1</td><td>2</td></tr></table></body></html>";
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         output.write(response.getBytes(StandardCharsets.UTF_8));
     }
 }
