@@ -1,5 +1,8 @@
 package ru.otus.october.http.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -7,6 +10,7 @@ import java.net.Socket;
 public class HttpServer {
     private int port;
     private Dispatcher dispatcher;
+    private static final Logger LOGGER = LogManager.getLogger(HttpServer.class);
 
     public HttpServer(int port) {
         this.port = port;
@@ -15,7 +19,7 @@ public class HttpServer {
 
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Сервер запущен на порту: " + port);
+            LOGGER.info("Сервер запущен на порту: {}", port);
             while (true) {
                 try (Socket socket = serverSocket.accept()) {
                     byte[] buffer = new byte[8192];
