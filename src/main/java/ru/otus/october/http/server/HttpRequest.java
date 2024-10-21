@@ -78,19 +78,17 @@ public class HttpRequest {
         Map<String, String> headersMap = new HashMap<>();
         String[] splitRawHeaders = rawHeaders.split("\r\n");
         for (int i = 1; i < splitRawHeaders.length; i++) {
-            String key = splitRawHeaders[i].split(": ")[0];
+            String key = splitRawHeaders[i].split(": ", 2)[0];
             String value = "";
             if (splitRawHeaders[i].split(": ").length > 1) {
-                value = splitRawHeaders[i].split(": ")[1];
+                value = splitRawHeaders[i].split(": ", 2)[1];
             }
             headersMap.put(key, value);
         }
     }
 
-    public void info(boolean debug) {
-        if (debug) {
-            LOGGER.debug("Первоначальный запрос: {}", rawRequest);
-        }
+    public void info() {
+        LOGGER.debug("Первоначальный запрос: {}", rawRequest);
         LOGGER.info("Method: {}", method);
         LOGGER.info("URI: {}", uri);
         LOGGER.info("Parameters: {}", parameters);
