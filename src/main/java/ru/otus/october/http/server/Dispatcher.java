@@ -12,7 +12,7 @@ import java.util.Set;
 
 public class Dispatcher {
     private Map<String, RequestProcessor> processors;
-    private Set<String> possibleUrls;
+    private Set<String> possibleUrls = new HashSet<>();
     private RequestProcessor defaultNotFoundProcessor;
     private RequestProcessor defaultInternalServerErrorProcessor;
     private RequestProcessor defaultBadRequestProcessor;
@@ -28,21 +28,20 @@ public class Dispatcher {
         this.processors.put("GET /calculator", new CalculatorProcessor());
         this.processors.put("GET /items", new GetAllItemsProcessor(itemsRepository));
         this.processors.put("POST /items", new CreateNewItemsProcessor(itemsRepository));
-        this.possibleUrls = new HashSet<>();
-        this.possibleUrls.add("POST /calculator");
-        this.possibleUrls.add("POST /calculator/");
-        this.possibleUrls.add("GET /calculator/");
-        this.possibleUrls.add("GET /items/");
         this.defaultNotFoundProcessor = new DefaultNotFoundProcessor();
         this.defaultInternalServerErrorProcessor = new DefaultInternalServerErrorProcessor();
         this.defaultBadRequestProcessor = new DefaultBadRequestProcessor();
         this.defaultMethodNotAllowedProcessor = new DefaultMethodNotAllowedProcessor();
+        for (String url : processors.keySet()) {
+            int startIndex = url.indexOf(' ');
+            this.possibleUrls.add(url.substring(startIndex + 1));
+        }
     }
 
     public void execute(HttpRequest request, OutputStream out) throws IOException {
         try {
 
-            if (possibleUrls.contains(request.getRoutingKey())) {
+            if (possibleUrls.contains(request.getUri()) && !(processors.containsKey(request.getRoutingKey()))) {
                 defaultMethodNotAllowedProcessor.execute(request, out);
                 return;
             }
