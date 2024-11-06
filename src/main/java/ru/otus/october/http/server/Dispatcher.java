@@ -6,13 +6,18 @@ import ru.otus.october.http.server.processors.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Dispatcher {
     private Map<String, RequestProcessor> processors;
+    private Set<String> possibleUrls = new HashSet<>();
     private RequestProcessor defaultNotFoundProcessor;
     private RequestProcessor defaultInternalServerErrorProcessor;
     private RequestProcessor defaultBadRequestProcessor;
+
+    private RequestProcessor defaultMethodNotAllowedProcessor;
 
     private ItemsRepository itemsRepository;
 
@@ -26,14 +31,26 @@ public class Dispatcher {
         this.defaultNotFoundProcessor = new DefaultNotFoundProcessor();
         this.defaultInternalServerErrorProcessor = new DefaultInternalServerErrorProcessor();
         this.defaultBadRequestProcessor = new DefaultBadRequestProcessor();
+        this.defaultMethodNotAllowedProcessor = new DefaultMethodNotAllowedProcessor();
+        for (String url : processors.keySet()) {
+            int startIndex = url.indexOf(' ');
+            this.possibleUrls.add(url.substring(startIndex + 1));
+        }
     }
 
     public void execute(HttpRequest request, OutputStream out) throws IOException {
         try {
+
+            if (possibleUrls.contains(request.getUri()) && !(processors.containsKey(request.getRoutingKey()))) {
+                defaultMethodNotAllowedProcessor.execute(request, out);
+                return;
+            }
+
             if (!processors.containsKey(request.getRoutingKey())) {
                 defaultNotFoundProcessor.execute(request, out);
                 return;
             }
+
             processors.get(request.getRoutingKey()).execute(request, out);
         } catch (BadRequestException e) {
             request.setException(e);
